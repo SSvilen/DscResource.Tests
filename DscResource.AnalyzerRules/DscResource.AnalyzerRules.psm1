@@ -1076,7 +1076,7 @@ function Measure-Keyword
                 $item.Extent.EndColumnNumber,
                 "$($item.Text) ",
                 $item.Extent.File,
-                'Replace {0} with {1}' -f ($item.Extent.Text, "$($item.Text) ")
+                'Replace {0} with {1}' -f ("$($item.Extent.Text)(", "$($item.Text) (")
             )
             $suggestedCorrections.Add($suggestedCorrection) | Out-Null
             $script:diagnosticRecord['suggestedCorrections'] = $suggestedCorrections
