@@ -313,6 +313,12 @@ function Measure-IfStatement
             $script:diagnosticRecord['Message'] = $localizedData.StatementsContainsUpperCaseLetter -f 'if'
             $script:diagnosticRecord -as $diagnosticRecordType
         } # if
+
+        if (Test-CorrectFormatBeforeAndAfter @testParameters)
+        {
+            $script:diagnosticRecord['Message'] = $localizedData.TwoNewLinesBeforeAndAfter
+            $script:diagnosticRecord -as $diagnosticRecordType
+        } # if
     }
     catch
     {
