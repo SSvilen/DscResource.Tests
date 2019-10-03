@@ -283,25 +283,35 @@ function Test-StatementContainsUpperCase
     return ($statement -cne $statement.ToLower())
 }
 
-function Test-CorrectFormatBeforeAndAfter
+function Test-NoNewLineBeforeAndAfter
 {
     [CmdletBinding()]
     [OutputType([System.Boolean])]
     param (
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
-        [System.String]
-        $StatementBlock
+        [System.Management.Automation.Language.StatementAst]
+        $StatementAst
     )
 
-    $statementBlockRows = Get-StatementBlockAsRows -StatementBlock $StatementBlock
-    $beginsCorrectly = $statementBlockRows[0] -eq '{' -or $statementBlockRows[0] -eq [string]::Empty
-    $endsCorrectly = $statementBlockRows[-1] -eq '}' -or $statementBlockRows[-1] -eq [string]::Empty
+    #$astType = $StatementAst.GetType()
+    #$likewiseAstsStarLines = $StatementAst.Parent.FindAll( { $args[0] -is $astType }, $true ).Extent.StartLineNumber
+    $parentStartLine = $StatementAst.Parent.Extent.StartLineNumber
+
+    #the line before that ast should be either a blank line or '{'
+    $statementBlockRows = Get-StatementBlockAsRows -StatementBlock $StatementAst.Parent
+    $previousLine = $statementBlockRows[$StatementAst.Extent.StartLineNumber - $parentStartLine - 1]
+    $beginsCorrectly = $previousLine -match '(\s*{)' -or $previousLine -eq [string]::Empty
+
+    #the line after should either be a blank line, or '}' or begining of another statement block of the same type
+    $nextLine = $statementBlockRows[$StatementAst.Extent.EndLineNumber - $parentStartLine + 1]
+    #$nextLineNumber = $StatementAst.Extent.EndLineNumber + 1
+    $endsCorrectly = $nextLine -match '(\s*})' -or $nextLine -notmatch '[\w\W\d]'
 
     if ($beginsCorrectly -and $endsCorrectly)
     {
-        return $true
+        return $false
     }
 
-    return $false
+    return $true
 }

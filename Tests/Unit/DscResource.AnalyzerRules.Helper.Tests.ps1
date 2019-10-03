@@ -197,13 +197,13 @@ Describe 'DscResource.AnalyzerRules.Helper Unit Tests' {
                 '
                     $Ast = [System.Management.Automation.Language.Parser]::ParseInput($definition, [ref] $null, [ref] $null)
                     $ParameterAst = $Ast.Find( {
-                        param
-                        (
-                            [System.Management.Automation.Language.Ast]
-                            $AST
-                        )
-                        $Ast -is [System.Management.Automation.Language.ParameterAst]
-                    }, $true)
+                            param
+                            (
+                                [System.Management.Automation.Language.Ast]
+                                $AST
+                            )
+                            $Ast -is [System.Management.Automation.Language.ParameterAst]
+                        }, $true)
                     ($ParameterAst -is [System.Management.Automation.Language.ParameterAst]) | Should -Be $true
                     $isInClass = Test-isInClass -Ast $ParameterAst
                     $isInClass | Should -Be $false
@@ -223,13 +223,13 @@ Describe 'DscResource.AnalyzerRules.Helper Unit Tests' {
                 '
                     $Ast = [System.Management.Automation.Language.Parser]::ParseInput($definition, [ref] $null, [ref] $null)
                     $ParameterAst = $Ast.Find( {
-                        param
-                        (
-                            [System.Management.Automation.Language.Ast]
-                            $AST
-                        )
-                        $Ast -is [System.Management.Automation.Language.ParameterAst]
-                    }, $true)
+                            param
+                            (
+                                [System.Management.Automation.Language.Ast]
+                                $AST
+                            )
+                            $Ast -is [System.Management.Automation.Language.ParameterAst]
+                        }, $true)
                     ($ParameterAst -is [System.Management.Automation.Language.ParameterAst]) | Should -Be $true
                     $isInClass = Test-isInClass -Ast $ParameterAst
                     $isInClass | Should -Be $true
@@ -252,13 +252,13 @@ Describe 'DscResource.AnalyzerRules.Helper Unit Tests' {
                 '
                     $Ast = [System.Management.Automation.Language.Parser]::ParseInput($definition, [ref] $null, [ref] $null)
                     $ParameterAst = $Ast.Find( {
-                        param
-                        (
-                            [System.Management.Automation.Language.Ast]
-                            $AST
-                        )
-                        $Ast -is [System.Management.Automation.Language.ParameterAst]
-                    }, $true)
+                            param
+                            (
+                                [System.Management.Automation.Language.Ast]
+                                $AST
+                            )
+                            $Ast -is [System.Management.Automation.Language.ParameterAst]
+                        }, $true)
                     ($ParameterAst -is [System.Management.Automation.Language.ParameterAst]) | Should -Be $true
                     $isInClass = Test-isInClass -Ast $ParameterAst
                     $isInClass | Should -Be $false
@@ -289,6 +289,135 @@ Describe 'DscResource.AnalyzerRules.Helper Unit Tests' {
                     $statementBlock = 'forEach ($a in $b)'
 
                     Test-StatementContainsUpperCase -StatementBlock $statementBlock | Should -Be $true
+                }
+            }
+        }
+
+        Describe 'Test-NoNewLineBeforeAndAfter' {
+            Context 'Pre-statement line checks' {
+                It 'Should return true when not preceded with "{" or a blank line' {
+                    $definition = '
+                    $something = $true
+                    if ($something)
+                    {
+                    }
+
+                    '
+                    $Ast = [System.Management.Automation.Language.Parser]::ParseInput($definition, [ref] $null, [ref] $null)
+                    $isStatementAST = $Ast.Find( {
+                            param
+                            (
+                                [System.Management.Automation.Language.Ast]
+                                $AST
+                            )
+                            $Ast -is [System.Management.Automation.Language.IfStatementAst]
+                        }, $true)
+                    Test-NoNewLineBeforeAndAfter -StatementAst $isStatementAST | Should -Be $true
+                }
+                It 'Should return false when preceded with "{' {
+                    $definition = '
+                    try
+                    {
+                        if ($something)
+                        {
+                        }
+                    }
+                    '
+                    $Ast = [System.Management.Automation.Language.Parser]::ParseInput($definition, [ref] $null, [ref] $null)
+                    $isStatementAST = $Ast.Find( {
+                            param
+                            (
+                                [System.Management.Automation.Language.Ast]
+                                $AST
+                            )
+                            $Ast -is [System.Management.Automation.Language.IfStatementAst]
+                        }, $true)
+                    Test-NoNewLineBeforeAndAfter -StatementAst $isStatementAST | Should -Be $false
+                }
+                It 'Should return false when preceded with blank line' {
+                    $definition = '
+                    $something = $true
+
+                    if ($something)
+                    {
+                    }
+
+                    '
+                    $Ast = [System.Management.Automation.Language.Parser]::ParseInput($definition, [ref] $null, [ref] $null)
+                    $isStatementAST = $Ast.Find( {
+                            param
+                            (
+                                [System.Management.Automation.Language.Ast]
+                                $AST
+                            )
+                            $Ast -is [System.Management.Automation.Language.IfStatementAst]
+                        }, $true)
+                    Test-NoNewLineBeforeAndAfter -StatementAst $isStatementAST | Should -Be $false
+                }
+            }
+            Context 'Post-Statement line checks' {
+                It 'Should return true when not followed from "}" or a blank line' {
+                    $definition = '
+                    try
+                    {
+                        if ($something)
+                        {
+                        }
+                        $something = $true
+                    }
+                    '
+                    $Ast = [System.Management.Automation.Language.Parser]::ParseInput($definition, [ref] $null, [ref] $null)
+                    $isStatementAST = $Ast.Find( {
+                            param
+                            (
+                                [System.Management.Automation.Language.Ast]
+                                $AST
+                            )
+                            $Ast -is [System.Management.Automation.Language.IfStatementAst]
+                        }, $true)
+                    Test-NoNewLineBeforeAndAfter -StatementAst $isStatementAST | Should -Be $true
+                }
+                It 'Should return false when followed from "}"' {
+                    $definition = '
+                    try
+                    {
+                        if ($something)
+                        {
+                        }
+                    }
+                    '
+                    $Ast = [System.Management.Automation.Language.Parser]::ParseInput($definition, [ref] $null, [ref] $null)
+                    $isStatementAST = $Ast.Find( {
+                            param
+                            (
+                                [System.Management.Automation.Language.Ast]
+                                $AST
+                            )
+                            $Ast -is [System.Management.Automation.Language.IfStatementAst]
+                        }, $true)
+                    Test-NoNewLineBeforeAndAfter -StatementAst $isStatementAST | Should -Be $false
+                }
+                It 'Should return false when followed from new line' {
+                    $definition = '
+                    try
+                    {
+                        if ($something)
+                        {
+                        }
+
+                        $something = $true
+                    }
+                    '
+                    $Ast = [System.Management.Automation.Language.Parser]::ParseInput($definition, [ref] $null, [ref] $null)
+                    $isStatementAST = $Ast.Find( {
+                            param
+                            (
+                                [System.Management.Automation.Language.Ast]
+                                $AST
+                            )
+                            $Ast -is [System.Management.Automation.Language.IfStatementAst]
+                        }, $true)
+                    Test-NoNewLineBeforeAndAfter -StatementAst $isStatementAST | Should -Be $false
                 }
             }
         }
