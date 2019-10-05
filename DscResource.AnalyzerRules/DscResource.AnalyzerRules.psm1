@@ -314,7 +314,7 @@ function Measure-IfStatement
             $script:diagnosticRecord -as $diagnosticRecordType
         } # if
 
-        if (Test-CorrectFormatBeforeAndAfter @testParameters)
+        if (Test-NoNewLineBeforeAndAfter -StatementAst $IfStatementAst)
         {
             $script:diagnosticRecord['Message'] = $localizedData.TwoNewLinesBeforeAndAfter
             $script:diagnosticRecord -as $diagnosticRecordType
