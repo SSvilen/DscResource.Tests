@@ -301,9 +301,19 @@ function Test-NoNewLineBeforeAndAfter
 
     #the line before that ast should be either a blank line or '{'
     $statementBlockRows = Get-StatementBlockAsRows -StatementBlock $StatementAst.Parent.Extent
-    $previousLine = $statementBlockRows[$StatementAst.Extent.StartLineNumber - $parentStartLine - 1]
-    $beginsCorrectly = ($previousLine -match '(\s*{)' -or [System.String]::IsNullOrEmpty($previousLine) -or
-        $likewiseAstsEndLines -contains ($StatementAst.Extent.EndLineNumber + 1))
+
+    if ($StatementAst.Extent.StartLineNumber -eq $parentStartLine)
+    {
+        $beginsCorrectly = $true
+    }
+    else
+    {
+        $previousLine = $statementBlockRows[$StatementAst.Extent.StartLineNumber - $parentStartLine - 1]
+        $beginsCorrectly = ($previousLine -match '\s*{' -or
+            $previousLine -match '^\s*#' -or
+            [System.String]::IsNullOrEmpty($previousLine) -or
+            $likewiseAstsEndLines -contains ($StatementAst.Extent.StartLineNumber - 1))
+    }
 
     #the line after should either be a blank line, or '}' or begining of another statement block of the same type
     $nextLine = $statementBlockRows[$StatementAst.Extent.EndLineNumber - $parentStartLine + 1]

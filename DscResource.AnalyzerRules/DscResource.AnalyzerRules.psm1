@@ -138,6 +138,7 @@ function Measure-ParameterBlockMandatoryNamedArgument
                     try
                     {
                         $value = $NamedAttributeArgumentAst.Argument.SafeGetValue()
+
                         if ($value -eq $false)
                         {
                             $script:diagnosticRecord['Message'] = $localizedData.ParameterBlockNonMandatoryParameterMandatoryAttributeWrongFormat
@@ -230,6 +231,12 @@ function Measure-FunctionBlockBraces
         if (Test-StatementOpeningBraceIsFollowedByMoreThanOneNewLine @testParameters)
         {
             $script:diagnosticRecord['Message'] = $localizedData.FunctionOpeningBraceShouldBeFollowedByOnlyOneNewLine
+            $script:diagnosticRecord -as $diagnosticRecordType
+        } # if
+
+        if (Test-NoNewLineBeforeAndAfter -StatementAst $FunctionDefinitionAst)
+        {
+            $script:diagnosticRecord['Message'] = $localizedData.TwoNewLinesBeforeAndAfter
             $script:diagnosticRecord -as $diagnosticRecordType
         } # if
     }
@@ -391,6 +398,11 @@ function Measure-ForEachStatement
             $script:diagnosticRecord['Message'] = $localizedData.StatementsContainsUpperCaseLetter -f 'foreach'
             $script:diagnosticRecord -as $diagnosticRecordType
         } # if
+        if (Test-NoNewLineBeforeAndAfter -StatementAst $ForEachStatementAst)
+        {
+            $script:diagnosticRecord['Message'] = $localizedData.TwoNewLinesBeforeAndAfter
+            $script:diagnosticRecord -as $diagnosticRecordType
+        } # if
     }
     catch
     {
@@ -461,6 +473,11 @@ function Measure-DoUntilStatement
         if (Test-StatementContainsUpperCase @testParameters)
         {
             $script:diagnosticRecord['Message'] = $localizedData.StatementsContainsUpperCaseLetter -f 'do'
+            $script:diagnosticRecord -as $diagnosticRecordType
+        } # if
+        if (Test-NoNewLineBeforeAndAfter -StatementAst $DoUntilStatementAst)
+        {
+            $script:diagnosticRecord['Message'] = $localizedData.TwoNewLinesBeforeAndAfter
             $script:diagnosticRecord -as $diagnosticRecordType
         } # if
     }
@@ -535,6 +552,11 @@ function Measure-DoWhileStatement
             $script:diagnosticRecord['Message'] = $localizedData.StatementsContainsUpperCaseLetter -f 'do'
             $script:diagnosticRecord -as $diagnosticRecordType
         } # if
+        if (Test-NoNewLineBeforeAndAfter -StatementAst $DoWhileStatementAst)
+        {
+            $script:diagnosticRecord['Message'] = $localizedData.TwoNewLinesBeforeAndAfter
+            $script:diagnosticRecord -as $diagnosticRecordType
+        } # if
     }
     catch
     {
@@ -605,6 +627,11 @@ function Measure-WhileStatement
         if (Test-StatementContainsUpperCase @testParameters)
         {
             $script:diagnosticRecord['Message'] = $localizedData.StatementsContainsUpperCaseLetter -f 'while'
+            $script:diagnosticRecord -as $diagnosticRecordType
+        } # if
+        if (Test-NoNewLineBeforeAndAfter -StatementAst $WhileStatementAst)
+        {
+            $script:diagnosticRecord['Message'] = $localizedData.TwoNewLinesBeforeAndAfter
             $script:diagnosticRecord -as $diagnosticRecordType
         } # if
     }
