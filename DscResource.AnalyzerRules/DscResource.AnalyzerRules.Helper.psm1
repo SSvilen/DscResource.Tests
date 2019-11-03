@@ -294,19 +294,24 @@ function Test-NoNewLineBeforeAndAfter
         $StatementAst
     )
 
-    #$astType = $StatementAst.GetType()
-    #$likewiseAstsStarLines = $StatementAst.Parent.FindAll( { $args[0] -is $astType }, $true ).Extent.StartLineNumber
+    $astType = $StatementAst.GetType()
+    $likewiseAstsStartLines = $StatementAst.Parent.FindAll( { $args[0] -is $astType }, $true ).Extent.StartLineNumber
+    $likewiseAstsEndLines = $StatementAst.Parent.FindAll( { $args[0] -is $astType }, $true ).Extent.Endlinenumber
     $parentStartLine = $StatementAst.Parent.Extent.StartLineNumber
 
     #the line before that ast should be either a blank line or '{'
-    $statementBlockRows = Get-StatementBlockAsRows -StatementBlock $StatementAst.Parent
+    $statementBlockRows = Get-StatementBlockAsRows -StatementBlock $StatementAst.Parent.Extent
     $previousLine = $statementBlockRows[$StatementAst.Extent.StartLineNumber - $parentStartLine - 1]
-    $beginsCorrectly = $previousLine -match '(\s*{)' -or $previousLine -eq [string]::Empty
+    $beginsCorrectly = ($previousLine -match '(\s*{)' -or [System.String]::IsNullOrEmpty($previousLine) -or
+        $likewiseAstsEndLines -contains ($StatementAst.Extent.EndLineNumber + 1))
 
     #the line after should either be a blank line, or '}' or begining of another statement block of the same type
     $nextLine = $statementBlockRows[$StatementAst.Extent.EndLineNumber - $parentStartLine + 1]
-    #$nextLineNumber = $StatementAst.Extent.EndLineNumber + 1
-    $endsCorrectly = $nextLine -match '(\s*})' -or $nextLine -notmatch '[\w\W\d]'
+    $nextLineNumber = $StatementAst.Extent.EndLineNumber + 1
+    $endsCorrectly = ($nextLine -match '(\s*})' -or
+        [System.String]::IsNullOrEmpty($nextLine) -or
+        $nextLineNumber -eq $StatementAst.Parent.Extent.EndLineNumber -or
+        $likewiseAstsStartLines -contains $nextLineNumber)
 
     if ($beginsCorrectly -and $endsCorrectly)
     {
