@@ -152,6 +152,7 @@ function Test-StatementOpeningBraceOnSameLine
     )
 
     $statementBlockRows = Get-StatementBlockAsRows -StatementBlock $StatementBlock
+
     if ($statementBlockRows.Count)
     {
         # Check so that an opening brace does not exist on the same line as the statement.
@@ -194,6 +195,7 @@ function Test-StatementOpeningBraceIsNotFollowedByNewLine
     )
 
     $statementBlockRows = Get-StatementBlockAsRows -StatementBlock $StatementBlock
+
     if ($statementBlockRows.Count -ge 2)
     {
         # Check so that an opening brace is followed by a new line.
@@ -236,6 +238,7 @@ function Test-StatementOpeningBraceIsFollowedByMoreThanOneNewLine
     )
 
     $statementBlockRows = Get-StatementBlockAsRows -StatementBlock $StatementBlock
+
     if ($statementBlockRows.Count -ge 3)
     {
         # Check so that an opening brace is followed by only one new line.
