@@ -283,29 +283,26 @@ function Test-StatementContainsUpperCase
     return ($statement -cne $statement.ToLower())
 }
 
-function Create-SuggestedCorrection
+<#
+    .SYNOPSIS
+        Creates a suggested correction
+    .PARAMETER Extent
+        The extent that needs correction
+    .PARAMETER NewString
+        The string that should replace the extent
+    .PARAMETER Description
+        The description that should be shown
+    .OUTPUTS
+        Output (if any)
+#>
+function New-SuggestedCorrection
 {
     [CmdletBinding()]
+    [OutputType([Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.CorrectionExtent])]
     param (
-        [Parameter(Mandatory)]
-        [System.Management.Automation.Language.ScriptExtent]
+        [Parameter(Mandatory = $true)]
+        [System.Management.Automation.Language.IScriptExtent]
         $Extent,
-
-        [Parameter()]
-        [System.Int32]
-        $StartLineNumber,
-
-        [Parameter()]
-        [System.Int32]
-        $EndLineNumber,
-
-        [Parameter()]
-        [System.Int32]
-        $StartColumnNumber,
-
-        [Parameter()]
-        [System.Int32]
-        $EndColumnNumber,
 
         [Parameter()]
         [System.String]
@@ -317,10 +314,10 @@ function Create-SuggestedCorrection
     )
 
     [Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.CorrectionExtent]::new(
-        $Extent.$StartLineNumber,
-        $Extent.$EndLineNumber,
-        $Extent.$StartColumnNumber,
-        $Extent.$EndColumnNumber,
+        $Extent.StartLineNumber,
+        $Extent.EndLineNumber,
+        $Extent.StartColumnNumber,
+        $Extent.EndColumnNumber,
         $NewString,
         $Extent.File,
         $Description
