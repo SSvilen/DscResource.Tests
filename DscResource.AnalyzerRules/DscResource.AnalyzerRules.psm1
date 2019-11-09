@@ -1049,7 +1049,7 @@ function Measure-Keyword
         {
             $script:diagnosticRecord['Extent'] = $item.Extent
             $script:diagnosticRecord['Message'] = $localizedData.StatementsContainsUpperCaseLetter -f $item.Text
-            $suggestedCorrections = New-Object Collections.Generic.List[Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.CorrectionExtent]
+            $suggestedCorrections = New-Object -TypeName Collections.Generic.List[Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.CorrectionExtent]
             $suggestedCorrection = [Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.CorrectionExtent]::new(
                 $item.Extent.StartLineNumber,
                 $item.Extent.EndLineNumber,
@@ -1078,7 +1078,8 @@ function Measure-Keyword
                 $item.Extent.File,
                 'Replace {0} with {1}' -f ("$($item.Extent.Text)(", "$($item.Text) (")
             )
-            $suggestedCorrections.Add($suggestedCorrection) | Out-Null
+            $suggestedCorrections.Add() | Out-Null
+
             $script:diagnosticRecord['suggestedCorrections'] = $suggestedCorrections
             $script:diagnosticRecord -as $diagnosticRecordType
         }
