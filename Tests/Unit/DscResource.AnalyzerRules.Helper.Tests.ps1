@@ -1,3 +1,33 @@
+<#
+    .SYNOPSIS
+        Helper function to return tokens,
+        to be able to test custom rules.
+
+    .PARAMETER ScriptDefinition
+        The script definition to return ast for.
+#>
+function Get-TokensFromDefinition
+{
+    [CmdletBinding()]
+    [OutputType([System.Management.Automation.Language.Token[]])]
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [System.String]
+        $ScriptDefinition
+    )
+
+    $parseErrors = $token = $null
+    $definitionAst = [System.Management.Automation.Language.Parser]::ParseInput($ScriptDefinition, [ref] $token, [ref] $parseErrors)
+
+    if ($parseErrors)
+    {
+        throw $parseErrors
+    }
+
+    return $token
+}
+
 Describe 'DscResource.AnalyzerRules.Helper Unit Tests' {
     BeforeAll {
         $projectRootPath = Split-Path -Path (Split-Path -Path $PSScriptRoot -Parent) -Parent
@@ -197,13 +227,13 @@ Describe 'DscResource.AnalyzerRules.Helper Unit Tests' {
                 '
                     $Ast = [System.Management.Automation.Language.Parser]::ParseInput($definition, [ref] $null, [ref] $null)
                     $ParameterAst = $Ast.Find( {
-                        param
-                        (
-                            [System.Management.Automation.Language.Ast]
-                            $AST
-                        )
-                        $Ast -is [System.Management.Automation.Language.ParameterAst]
-                    }, $true)
+                            param
+                            (
+                                [System.Management.Automation.Language.Ast]
+                                $AST
+                            )
+                            $Ast -is [System.Management.Automation.Language.ParameterAst]
+                        }, $true)
                     ($ParameterAst -is [System.Management.Automation.Language.ParameterAst]) | Should -Be $true
                     $isInClass = Test-isInClass -Ast $ParameterAst
                     $isInClass | Should -Be $false
@@ -223,13 +253,13 @@ Describe 'DscResource.AnalyzerRules.Helper Unit Tests' {
                 '
                     $Ast = [System.Management.Automation.Language.Parser]::ParseInput($definition, [ref] $null, [ref] $null)
                     $ParameterAst = $Ast.Find( {
-                        param
-                        (
-                            [System.Management.Automation.Language.Ast]
-                            $AST
-                        )
-                        $Ast -is [System.Management.Automation.Language.ParameterAst]
-                    }, $true)
+                            param
+                            (
+                                [System.Management.Automation.Language.Ast]
+                                $AST
+                            )
+                            $Ast -is [System.Management.Automation.Language.ParameterAst]
+                        }, $true)
                     ($ParameterAst -is [System.Management.Automation.Language.ParameterAst]) | Should -Be $true
                     $isInClass = Test-isInClass -Ast $ParameterAst
                     $isInClass | Should -Be $true
@@ -252,13 +282,13 @@ Describe 'DscResource.AnalyzerRules.Helper Unit Tests' {
                 '
                     $Ast = [System.Management.Automation.Language.Parser]::ParseInput($definition, [ref] $null, [ref] $null)
                     $ParameterAst = $Ast.Find( {
-                        param
-                        (
-                            [System.Management.Automation.Language.Ast]
-                            $AST
-                        )
-                        $Ast -is [System.Management.Automation.Language.ParameterAst]
-                    }, $true)
+                            param
+                            (
+                                [System.Management.Automation.Language.Ast]
+                                $AST
+                            )
+                            $Ast -is [System.Management.Automation.Language.ParameterAst]
+                        }, $true)
                     ($ParameterAst -is [System.Management.Automation.Language.ParameterAst]) | Should -Be $true
                     $isInClass = Test-isInClass -Ast $ParameterAst
                     $isInClass | Should -Be $false
@@ -289,6 +319,39 @@ Describe 'DscResource.AnalyzerRules.Helper Unit Tests' {
                     $statementBlock = 'forEach ($a in $b)'
 
                     Test-StatementContainsUpperCase -StatementBlock $statementBlock | Should -Be $true
+                }
+            }
+        }
+
+        Describe 'New-SuggestedCorrection tests' {
+            Context 'When suggested correction should be created' {
+                It 'Should create suggested correction' {
+                    $definition = '
+                        if("example" -eq "example" -or "magic")
+                        {
+                            Write-Verbose -Message "Example found."
+                        }
+                    '
+
+                    $token = Get-TokensFromDefinition -ScriptDefinition $definition
+                    $record = Measure-Keyword -Token $token
+
+                    $record.SuggestedCorrections | Should -Exist
+                }
+            }
+            Context 'When suggested correction should not be created' {
+                It 'Should create suggested correction' {
+                    $definition = '
+                        if("example" -eq "example" -or "magic")
+                        {
+                            Write-Verbose -Message "Example found."
+                        }
+                    '
+
+                    $token = Get-TokensFromDefinition -ScriptDefinition $definition
+                    $record = Measure-Keyword -Token $token
+
+                    $record | Should -Not -Exist
                 }
             }
         }
