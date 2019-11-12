@@ -1,33 +1,3 @@
-<#
-    .SYNOPSIS
-        Helper function to return tokens,
-        to be able to test custom rules.
-
-    .PARAMETER ScriptDefinition
-        The script definition to return ast for.
-#>
-function Get-TokensFromDefinition
-{
-    [CmdletBinding()]
-    [OutputType([System.Management.Automation.Language.Token[]])]
-    param
-    (
-        [Parameter(Mandatory = $true)]
-        [System.String]
-        $ScriptDefinition
-    )
-
-    $parseErrors = $token = $null
-    $definitionAst = [System.Management.Automation.Language.Parser]::ParseInput($ScriptDefinition, [ref] $token, [ref] $parseErrors)
-
-    if ($parseErrors)
-    {
-        throw $parseErrors
-    }
-
-    return $token
-}
-
 Describe 'DscResource.AnalyzerRules.Helper Unit Tests' {
     BeforeAll {
         $projectRootPath = Split-Path -Path (Split-Path -Path $PSScriptRoot -Parent) -Parent
@@ -324,34 +294,39 @@ Describe 'DscResource.AnalyzerRules.Helper Unit Tests' {
         }
 
         Describe 'New-SuggestedCorrection tests' {
+            $projectRootPath = Split-Path -Path (Split-Path -Path $PSScriptRoot -Parent) -Parent
+            $moduleRootPath = Join-Path -Path $projectRootPath -ChildPath 'DscResource.AnalyzerRules'
+            $invokeScriptAnalyzerParameters = @{
+                CustomRulePath = $moduleRootPath
+                IncludeRule    = 'Measure-Keyword'
+            }
+
             Context 'When suggested correction should be created' {
                 It 'Should create suggested correction' {
-                    $definition = '
+                    $invokeScriptAnalyzerParameters['ScriptDefinition'] = '
                         if("example" -eq "example" -or "magic")
                         {
                             Write-Verbose -Message "Example found."
                         }
                     '
 
-                    $token = Get-TokensFromDefinition -ScriptDefinition $definition
-                    $record = Measure-Keyword -Token $token
+                    $record = Invoke-ScriptAnalyzer @invokeScriptAnalyzerParameters
 
-                    $record.SuggestedCorrections | Should -Exist
+                    $record.SuggestedCorrections | Should -Not -BeNullOrEmpty
                 }
             }
             Context 'When suggested correction should not be created' {
                 It 'Should create suggested correction' {
-                    $definition = '
-                        if("example" -eq "example" -or "magic")
+                    $invokeScriptAnalyzerParameters['ScriptDefinition'] = '
+                        if ("example" -eq "example" -or "magic")
                         {
                             Write-Verbose -Message "Example found."
                         }
                     '
 
-                    $token = Get-TokensFromDefinition -ScriptDefinition $definition
-                    $record = Measure-Keyword -Token $token
+                    $record = Invoke-ScriptAnalyzer @invokeScriptAnalyzerParameters
 
-                    $record | Should -Not -Exist
+                    $record | Should -BeNullOrEmpty
                 }
             }
         }
